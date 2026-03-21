@@ -1,0 +1,351 @@
+/* Atlas Sweeper - Retro CRT Terminal Aesthetic */
+
+/* Font imports: using system monospace fallback to avoid external deps */
+@font-face {
+  font-family: 'VT323';
+  src: local('VT323'), local('Courier New'), monospace;
+}
+
+:root {
+  --bg-color: #0a0a0a;
+  --fg-bright: #33ff00;
+  --fg-dim: #1a8000;
+  --glow: 0 0 4px var(--fg-bright), 0 0 8px var(--fg-bright);
+  --glow-strong: 0 0 6px var(--fg-bright), 0 0 12px var(--fg-bright), 0 0 18px var(--fg-bright);
+  --cell-bg: #111;
+  --cell-revealed: #0a0a0a;
+  --cell-border: #333;
+  --grid-gap: 2px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--fg-bright);
+  font-family: 'VT323', 'Courier New', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-shadow: 0 0 2px var(--fg-bright);
+}
+
+/* CRT Overlay: scanlines + vignette + curvature hint */
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1000;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.15),
+      rgba(0,0,0,0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    ),
+    radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%);
+}
+
+/* Screen container with slight curvature */
+.screen-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1200px;
+  max-height: 800px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  overflow: hidden;
+  border-radius: 40px;
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.8), var(--glow-strong);
+}
+
+/* Power-on flicker effect */
+.power-on-flicker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--fg-bright);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 900;
+  animation: powerOn 1.2s ease-out forwards;
+}
+
+@keyframes powerOn {
+  0% { opacity: 0.8; }
+  10% { opacity: 0.2; }
+  20% { opacity: 0.6; }
+  30% { opacity: 0.1; }
+  40% { opacity: 0.4; }
+  50% { opacity: 0.05; }
+  60% { opacity: 0.2; }
+  70% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 2px solid var(--fg-dim);
+  margin-bottom: 10px;
+}
+
+.glow-text {
+  text-shadow: var(--glow);
+  color: var(--fg-bright);
+  font-weight: normal;
+  letter-spacing: 2px;
+}
+
+.controls-top {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.crt-btn {
+  background: transparent;
+  border: 2px solid var(--fg-bright);
+  color: var(--fg-bright);
+  font-family: 'VT323', monospace;
+  font-size: 1.2rem;
+  padding: 4px 12px;
+  cursor: pointer;
+  text-shadow: var(--glow);
+  box-shadow: 0 0 4px var(--fg-dim);
+  transition: all 0.1s;
+}
+
+.crt-btn:hover,
+.crt-btn:focus {
+  background: var(--fg-bright);
+  color: var(--bg-color);
+  box-shadow: var(--glow);
+  outline: none;
+}
+
+.difficulty-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.difficulty-selector label {
+  font-size: 1.1rem;
+}
+
+.crt-select {
+  background: var(--bg-color);
+  color: var(--fg-bright);
+  border: 2px solid var(--fg-dim);
+  font-family: 'VT323', monospace;
+  font-size: 1.1rem;
+  padding: 4px 8px;
+  cursor: pointer;
+  text-shadow: var(--glow);
+}
+
+.crt-select:focus {
+  border-color: var(--fg-bright);
+  outline: none;
+  box-shadow: var(--glow);
+}
+
+/* Game Area */
+.game-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  overflow: auto;
+}
+
+.hud {
+  display: flex;
+  gap: 40px;
+  font-size: 1.5rem;
+}
+
+.hud-item {
+  display: flex;
+  gap: 10px;
+}
+
+.hud .label {
+  color: var(--fg-dim);
+  text-shadow: none;
+}
+
+.hud .value {
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Grid container */
+.grid-container {
+  display: grid;
+  gap: var(--grid-gap);
+  background: var(--cell-bg);
+  border: 2px solid var(--fg-dim);
+  box-shadow: var(--glow-strong);
+  padding: 4px;
+  margin: 10px 0;
+}
+
+/* Individual cell */
+.cell {
+  width: 30px;
+  height: 30px;
+  background: var(--cell-bg);
+  border: 1px solid var(--fg-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s, transform 0.1s;
+  text-shadow: var(--glow);
+}
+
+.cell:focus {
+  outline: 2px solid var(--fg-bright);
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+.cell.revealed {
+  background: var(--cell-revealed);
+  border: 1px solid var(--cell-border);
+  cursor: default;
+}
+
+.cell.flagged::before {
+  content: "⚑";
+  animation: flagPlace 0.2s ease-out;
+}
+
+.cell.mine {
+  background: #500;
+  border-color: #f00;
+}
+
+.cell.mine::before {
+  content: "✸";
+  color: #ff0000;
+}
+
+/* Number colors for adjacent mines */
+.cell[data-neighbors="1"] { color: #3399ff; }
+.cell[data-neighbors="2"] { color: #33ff00; }
+.cell[data-neighbors="3"] { color: #ff3300; }
+.cell[data-neighbors="4"] { color: #6600cc; }
+.cell[data-neighbors="5"] { color: #996633; }
+.cell[data-neighbors="6"] { color: #33cccc; }
+.cell[data-neighbors="7"] { color: #333333; }
+.cell[data-neighbors="8"] { color: #666666; }
+
+@keyframes flagPlace {
+  0% { transform: scale(0.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Message overlay */
+.message-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 10, 10, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 800;
+  backdrop-filter: blur(2px);
+}
+
+.message-overlay.hidden {
+  display: none;
+}
+
+.message-box {
+  border: 3px solid var(--fg-bright);
+  padding: 30px 50px;
+  text-align: center;
+  box-shadow: var(--glow-strong);
+  background: var(--bg-color);
+  max-width: 90%;
+}
+
+.message-box h2 {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.message-box p {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+/* Footer */
+.footer {
+  padding: 8px 20px;
+  border-top: 1px solid var(--fg-dim);
+  margin-top: 10px;
+  text-align: center;
+}
+
+.instructions {
+  font-size: 1rem;
+  color: var(--fg-dim);
+  text-shadow: none;
+}
+
+/* Phosphor fade: subtle text shimmer */
+@keyframes phosphorFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.glow-text {
+  animation: phosphorFade 4s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cell { width: 24px; height: 24px; font-size: 0.9rem; }
+  .header { flex-direction: column; gap: 10px; }
+  .hud { font-size: 1.2rem; }
+  .glow-text { font-size: 1.5rem; }
+  .instructions { font-size: 0.85rem; }
+}
+
+@media (max-width: 480px) {
+  .cell { width: 20px; height: 20px; font-size: 0.8rem; }
+  .hud { gap: 20px; }
+  .glow-text { font-size: 1.2rem; }
+}

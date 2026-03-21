@@ -1,0 +1,90 @@
+[
+  {
+    "id": "PT-201",
+    "title": "Set up project foundation (HTML skeleton, meta tags, font fallbacks)",
+    "type": "task",
+    "depends_on": [],
+    "effort": "S",
+    "notes": "Create index.html with proper DOCTYPE, charset, viewport, and retro font stack (VT323, Courier New). Include CSS/JS links."
+  },
+  {
+    "id": "PT-202",
+    "title": "Implement core Minesweeper game logic (grid, cells, mines, reveal/flag mechanics)",
+    "type": "task",
+    "depends_on": ["PT-201"],
+    "effort": "L",
+    "notes": "Pure JS: create board data structure, cell class/object, mine placement, neighbor counting, flood fill reveal, win/lose detection."
+  },
+  {
+    "id": "PT-203",
+    "title": "Implement difficulty presets (beginner, intermediate, expert) and game initialization",
+    "type": "task",
+    "depends_on": ["PT-202"],
+    "effort": "M",
+    "notes": "Define grid dimensions and mine counts per difficulty. Provide UI selector or keyboard toggle. Reset functionality."
+  },
+  {
+    "id": "PT-204",
+    "title": "Add timer and mine counter UI components",
+    "type": "task",
+    "depends_on": ["PT-202"],
+    "effort": "S",
+    "notes": "Digital clock style counters. Timer starts on first reveal. Update every second. Display remaining unflagged mines."
+  },
+  {
+    "id": "PT-205",
+    "title": "Implement CRT terminal visual styling (scanlines, curvature, glow, vignette)",
+    "type": "task",
+    "depends_on": ["PT-201"],
+    "effort": "L",
+    "notes": "CSS: background #0a0a0a, text #33ff00/amber. Overlay with repeating linear gradient for scanlines. Box-shadow glows. Border-radius for curved screen effect. Radial gradient vignette. Phosphor fade (text-shadow animation)."
+  },
+  {
+    "id": "PT-206",
+    "title": "Add screen power-on/off and start flicker animations",
+    "type": "task",
+    "depends_on": ["PT-205"],
+    "effort": "M",
+    "notes": "CSS keyframes: initial full-screen flicker + vertical roll effect. Fade in content. Optionally add 'turn off' animation on game end or restart."
+  },
+  {
+    "id": "PT-207",
+    "title": "Implement cell reveal/flag animation and responsive grid layout",
+    "type": "task",
+    "depends_on": ["PT-202", "PT-205"],
+    "effort": "M",
+    "notes": "Transition effects: cells expand/fade when revealing. Flag icon placement animation. Grid uses CSS Grid with auto-fit for responsiveness. Maintain square cells."
+  },
+  {
+    "id": "PT-208",
+    "title": "Add win/loss overlay with restart button and animations",
+    "type": "task",
+    "depends_on": ["PT-202"],
+    "effort": "S",
+    "notes": "Overlay with CRT-style border. Show result message. Button with glow effect. Restart keeps same difficulty or allows selection."
+  },
+  {
+    "id": "PT-209",
+    "title": "Implement keyboard navigation and accessibility",
+    "type": "task",
+    "depends_on": ["PT-203", "PT-207"],
+    "effort": "M",
+    "notes": "Arrow keys move focus cell. Space/Enter reveals. F toggles flag. R restarts. Trap focus within grid. Ensure contrast and ARIA where needed."
+  },
+  {
+    "id": "PT-210",
+    "title": "Final polish, cross-browser testing, offline verification",
+    "type": "task",
+    "depends_on": ["PT-208", "PT-209"],
+    "effort": "M",
+    "notes": "Check no external deps (no Google Fonts unless base64 fallback). Verify no network requests. Adjust colors for contrast. Test Chrome/Firefox/Safari/Edge."
+  },
+  {
+    "id": "PT-211",
+    "title": "Push final code to GitHub repo and enable GitHub Pages",
+    "type": "task",
+    "depends_on": ["PT-210"],
+    "effort": "S",
+    "notes": "Commit all files to main branch. Use gh to enable Pages: gh api -X PUT repos/nimbusswarm/atlas-sweeper/pages --field source='{\"branch\":\"main\",\"path\":\"/\"}' or fallback to manual instructions."
+  }
+]

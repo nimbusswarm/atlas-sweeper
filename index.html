@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Retro CRT terminal Minesweeper clone">
+  <title>Atlas Sweeper</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="crt-overlay"></div>
+  <div class="screen-container">
+    <div class="power-on-flicker"></div>
+
+    <header class="header">
+      <h1 class="glow-text">ATLAS SWEEPER</h1>
+      <div class="controls-top">
+        <button id="restartBtn" class="crt-btn" title="Restart (R)">RESET</button>
+        <div class="difficulty-selector">
+          <label for="difficulty">LEVEL:</label>
+          <select id="difficulty" class="crt-select">
+            <option value="beginner">BEGINNER</option>
+            <option value="intermediate" selected>INTERMEDIATE</option>
+            <option value="expert">EXPERT</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main class="game-area">
+      <div class="hud">
+        <div class="hud-item">
+          <span class="label">MINES:</span>
+          <span id="mineCounter" class="value glow-text">000</span>
+        </div>
+        <div class="hud-item">
+          <span class="label">TIME:</span>
+          <span id="timer" class="value glow-text">000</span>
+        </div>
+      </div>
+
+      <div class="grid-container" id="grid" role="grid" aria-label="Minesweeper grid" tabindex="0"></div>
+
+      <div id="messageOverlay" class="message-overlay hidden" role="dialog" aria-modal="true">
+        <div class="message-box">
+          <h2 id="messageTitle" class="glow-text"></h2>
+          <p id="messageText"></p>
+          <button id="overlayCloseBtn" class="crt-btn">CONTINUE</button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p class="instructions">
+        L-CLICK/SPACE: REVEAL &nbsp;|&nbsp; R-CLICK/F: FLAG &nbsp;|&nbsp; ARROWS: MOVE &nbsp;|&nbsp; R: RESTART
+      </p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
