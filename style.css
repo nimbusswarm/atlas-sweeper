@@ -16,6 +16,8 @@
   --cell-revealed: #0a0a0a;
   --cell-border: #333;
   --grid-gap: 2px;
+  --h-padding: min(24px, 4vw);
+  --v-padding: min(12px, 2vh);
 }
 
 * {
@@ -66,11 +68,11 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
-  max-width: 1200px;
-  max-height: 800px;
+  max-width: 1400px;
+  max-height: 900px;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: var(--v-padding) var(--h-padding);
   overflow: hidden;
   border-radius: 40px;
   box-shadow: inset 0 0 80px rgba(0,0,0,0.8), var(--glow-strong);
@@ -107,9 +109,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  padding: 8px 0;
   border-bottom: 2px solid var(--fg-dim);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -123,7 +125,7 @@ body {
 
 .controls-top {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   align-items: center;
   flex-wrap: wrap;
 }
@@ -139,6 +141,7 @@ body {
   text-shadow: var(--glow);
   box-shadow: 0 0 4px var(--fg-dim);
   transition: all 0.1s;
+  white-space: nowrap;
 }
 
 .crt-btn:hover,
@@ -184,6 +187,7 @@ body {
   font-size: 1.3rem;
   padding: 8px 12px;
   width: 100%;
+  max-width: 300px;
   text-align: center;
   text-shadow: var(--glow);
 }
@@ -202,7 +206,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  overflow: auto;
+  overflow: hidden; /* No scrollbars */
   padding: 10px 0;
 }
 
@@ -210,6 +214,7 @@ body {
   display: flex;
   gap: 40px;
   font-size: 1.5rem;
+  flex-shrink: 0;
 }
 
 .hud-item {
@@ -239,6 +244,7 @@ body {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  flex-shrink: 0;
 }
 
 /* Individual cell */
@@ -339,10 +345,11 @@ body {
 
 /* Footer */
 .footer {
-  padding: 8px 20px;
+  padding: 8px 0;
   border-top: 1px solid var(--fg-dim);
-  margin-top: 10px;
+  margin-top: 8px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .instructions {
@@ -363,28 +370,28 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .cell { width: 24px; height: 24px; font-size: 0.9rem; }
-  .header { flex-direction: column; gap: 10px; }
-  .hud { font-size: 1.2rem; }
+  .header { flex-direction: column; gap: 10px; padding: 8px 0; }
+  .hud { font-size: 1.2rem; gap: 20px; }
   .glow-text { font-size: 1.5rem; }
   .instructions { font-size: 0.85rem; }
   .message-box { padding: 20px 30px; }
   .message-box h2 { font-size: 1.8rem; }
   .message-box p { font-size: 1rem; }
+  --h-padding: min(16px, 3vw);
+  --v-padding: min(10px, 2vh);
 }
 
 @media (max-width: 480px) {
-  .cell { width: 20px; height: 20px; font-size: 0.8rem; }
-  .hud { gap: 20px; }
+  .hud { font-size: 1rem; }
   .glow-text { font-size: 1.2rem; }
   .crt-btn { font-size: 1rem; padding: 4px 8px; }
-  .header { padding: 8px 10px; }
-  .game-area { padding: 5px 0; gap: 5px; }
+  .instructions { font-size: 0.8rem; }
+  --h-padding: min(12px, 4vw);
 }
 
 /* Extra small devices */
 @media (max-width: 360px) {
-  .cell { width: 18px; height: 18px; font-size: 0.7rem; }
-  .hud { font-size: 1rem; }
+  .hud { font-size: 0.9rem; }
   .instructions { font-size: 0.75rem; }
+  --h-padding: min(8px, 5vw);
 }

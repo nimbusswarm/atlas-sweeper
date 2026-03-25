@@ -110,24 +110,29 @@
 
   // Calculate responsive cell size
   function calculateCellSize() {
-    const maxGridWidth = Math.min(window.innerWidth - 40, 1200);
-    const maxGridHeight = Math.min(window.innerHeight - 200, 600);
     const cfg = CONFIG[state.difficulty];
     const gap = 2;
+    // Compute available space: viewport minus header/hud/footer and horizontal padding
+    const headerHeight = 80;
+    const hudHeight = 50;
+    const footerHeight = 40;
+    const vpadding = window.innerWidth < 768 ? 20 : 48; // matches CSS var --v-padding roughly
+    const hpadding = window.innerWidth < 768 ? (window.innerWidth < 480 ? 12 : 16) : 24; // matches --h-padding
+    const availableWidth = window.innerWidth - 2 * hpadding;
+    const availableHeight = window.innerHeight - headerHeight - hudHeight - footerHeight - 2 * vpadding;
     const totalGapWidth = (cfg.cols - 1) * gap;
     const totalGapHeight = (cfg.rows - 1) * gap;
-    const padding = 8;
-    const maxCellWidth = Math.max(18, Math.floor((maxGridWidth - totalGapWidth - padding) / cfg.cols));
-    const maxCellHeight = Math.max(18, Math.floor((maxGridHeight - totalGapHeight - padding) / cfg.rows));
-    return Math.min(maxCellWidth, maxCellHeight, 40);
+    const maxCellWidth = Math.floor((availableWidth - totalGapWidth - 8) / cfg.cols);
+    const maxCellHeight = Math.floor((availableHeight - totalGapHeight - 8) / cfg.rows);
+    // Constrain to reasonable range
+    return Math.max(12, Math.min(maxCellWidth, maxCellHeight, 40));
   }
 
   function setupGridLayout() {
     const cellSize = calculateCellSize();
-    const gap = getComputedStyle(document.documentElement).getPropertyValue('--grid-gap').trim() || '2px';
-    const gapPx = parseInt(gap, 10) || 2;
-    const containerWidth = state.cols * cellSize + (state.cols - 1) * gapPx + 8;
-    const containerHeight = state.rows * cellSize + (state.rows - 1) * gapPx + 8;
+    const gap = 2;
+    const containerWidth = state.cols * cellSize + (state.cols - 1) * gap + 8;
+    const containerHeight = state.rows * cellSize + (state.rows - 1) * gap + 8;
     const gridEl = elements.grid;
     gridEl.style.gridTemplateColumns = `repeat(${state.cols}, ${cellSize}px)`;
     gridEl.style.gridTemplateRows = `repeat(${state.rows}, ${cellSize}px)`;
