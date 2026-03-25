@@ -8,12 +8,6 @@
     expert: { cols: 30, rows: 16, mines: 99 }
   };
 
-  // Constants matching CSS
-  const GRID_OUTER_MARGIN = 12; // --grid-outer in px
-  const CONTAINER_PADDING = 4;  /* px */
-  const CONTAINER_BORDER = 2;   /* px */
-  const GAP = 2;               /* px */
-
   const state = {
     grid: [],
     cols: 0,
@@ -30,7 +24,8 @@
     focusedCell: null,
     touchStartTime: 0,
     touchTarget: null,
-    isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+    touchHandled: false // flag to ignore synthetic click after touch
   };
 
   const elements = {
@@ -113,6 +108,12 @@
     elements.leaderboardOverlay.classList.add('hidden');
     elements.grid.focus();
   }
+
+  // Constants matching CSS
+  const GRID_OUTER_MARGIN = 12; // --grid-outer in px
+  const CONTAINER_PADDING = 4;  /* px */
+  const CONTAINER_BORDER = 2;   /* px */
+  const GAP = 2;               /* px */
 
   // Calculate responsive cell size
   function calculateCellSize() {
@@ -210,13 +211,27 @@
         cellEl.dataset.col = c;
         cellEl.tabIndex = -1;
         // Mouse events
-        cellEl.addEventListener('click', handleClick.bind(null, cellData));
+        cellEl.addEventListener('click', (e) => {
+          if (state.touchHandled) {
+            e.preventDefault();
+            state.touchHandled = false;
+            return;
+          }
+          handleClick(cellData, e);
+        });
         cellEl.addEventListener('contextmenu', handleRightClick.bind(null, cellData));
         cellEl.addEventListener('focus', () => { state.focusedCell = cellData; });
         // Touch events for mobile
         cellEl.addEventListener('touchstart', handleTouchStart.bind(null, cellData), { passive: false });
         cellEl.addEventListener('touchend', handleTouchEnd.bind(null, cellData), { passive: false });
         cellEl.addEventListener('touchmove', handleTouchMove, { passive: false });
+        // Prevent synthetic mouse events after touch
+        cellEl.addEventListener('mouseup', (e) => {
+          if (state.touchHandled) {
+            e.preventDefault();
+            state.touchHandled = false;
+          }
+        });
         cellData.element = cellEl;
         elements.grid.appendChild(cellEl);
       }
@@ -228,6 +243,7 @@
   function handleTouchStart(cellData, event) {
     if (state.gameOver || state.gameWon) return;
     event.preventDefault();
+    state.touchHandled = false;
     touchMoved = false;
     state.touchStartTime = Date.now();
     state.touchTarget = cellData;
@@ -243,10 +259,12 @@
     const duration = Date.now() - state.touchStartTime;
     // Long press: > 500ms
     if (duration > 500 && state.touchTarget === cellData && !touchMoved) {
-      // Flag action
+      // Flag action - mark as handled to prevent synthetic click
+      state.touchHandled = true;
       handleRightClick(cellData, { preventDefault: () => {} });
     } else if (!touchMoved) {
-      // Tap: reveal
+      // Tap: reveal - mark as handled
+      state.touchHandled = true;
       handleClick(cellData, { preventDefault: () => {} });
     }
     state.touchTarget = null;
