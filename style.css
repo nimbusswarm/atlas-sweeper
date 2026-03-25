@@ -206,7 +206,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 0; /* we use grid margin for spacing */
+  gap: 0;
   overflow: hidden;
   padding: 0;
 }
@@ -216,7 +216,7 @@ body {
   gap: 40px;
   font-size: 1.5rem;
   flex-shrink: 0;
-  margin-bottom: 0; /* grid's top margin provides spacing */
+  margin-bottom: 0;
 }
 
 .hud-item {
@@ -241,8 +241,8 @@ body {
   background: var(--cell-bg);
   border: 2px solid var(--fg-dim);
   box-shadow: var(--glow-strong);
-  padding: 4px; /* inner padding */
-  margin: var(--grid-outer); /* equal outer padding on all sides */
+  padding: 4px;
+  margin: var(--grid-outer);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -349,7 +349,7 @@ body {
 .footer {
   padding: 8px 0;
   border-top: 1px solid var(--fg-dim);
-  margin-top: 0; /* grid's bottom margin provides spacing */
+  margin-top: 0;
   text-align: center;
   flex-shrink: 0;
 }
@@ -370,6 +370,49 @@ body {
   animation: phosphorFade 4s ease-in-out infinite;
 }
 
+/* Mobile Controls */
+.mobile-controls {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.d-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 6px;
+  width: 120px;
+}
+
+.d-pad button {
+  width: 100%;
+  height: 100%;
+  min-height: 36px;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.d-up { grid-column: 2; grid-row: 1; }
+.d-down { grid-column: 2; grid-row: 2; }
+.d-left { grid-column: 1; grid-row: 2; }
+.d-right { grid-column: 3; grid-row: 2; }
+
+.action-pad {
+  display: flex;
+  gap: 12px;
+}
+
+.action-flag, .action-reveal {
+  min-width: 80px;
+  font-size: 1rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .header { flex-direction: column; gap: 10px; padding: 8px 0; }
@@ -379,6 +422,10 @@ body {
   .message-box { padding: 20px 30px; }
   .message-box h2 { font-size: 1.8rem; }
   .message-box p { font-size: 1rem; }
+  .mobile-controls { gap: 16px; }
+  .d-pad { width: 100px; }
+  .d-pad button { min-height: 32px; font-size: 1rem; }
+  .action-flag, .action-reveal { min-width: 70px; font-size: 0.9rem; }
 }
 
 @media (max-width: 480px) {
@@ -387,10 +434,9 @@ body {
   .crt-btn { font-size: 1rem; padding: 4px 8px; }
   .header { padding: 8px 0; }
   .game-area { padding: 0; }
-}
-
-/* Extra small devices */
-@media (max-width: 360px) {
-  .hud { font-size: 0.9rem; }
-  .instructions { font-size: 0.75rem; }
+  .mobile-controls { gap: 12px; margin-top: 6px; }
+  .d-pad { width: 90px; gap: 4px; }
+  .d-pad button { min-height: 28px; font-size: 0.9rem; }
+  .action-pad { gap: 8px; }
+  .action-flag, .action-reveal { min-width: 60px; font-size: 0.85rem; }
 }

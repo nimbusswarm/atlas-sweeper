@@ -42,6 +42,20 @@
 
       <div class="grid-container" id="grid" role="grid" aria-label="Minesweeper grid" tabindex="0"></div>
 
+      <!-- Mobile Control Pad -->
+      <div class="mobile-controls">
+        <div class="d-pad">
+          <button class="crt-btn d-up" data-dir="up" title="Up">▲</button>
+          <button class="crt-btn d-down" data-dir="down" title="Down">▼</button>
+          <button class="crt-btn d-left" data-dir="left" title="Left">◀</button>
+          <button class="crt-btn d-right" data-dir="right" title="Right">▶</button>
+        </div>
+        <div class="action-pad">
+          <button id="mobileFlagBtn" class="crt-btn action-flag">⚑ FLAG</button>
+          <button id="mobileRevealBtn" class="crt-btn action-reveal">◉ REVEAL</button>
+        </div>
+      </div>
+
       <div id="messageOverlay" class="message-overlay hidden" role="dialog" aria-modal="true">
         <div class="message-box">
           <h2 id="messageTitle" class="glow-text"></h2>

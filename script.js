@@ -46,8 +46,67 @@
     leaderboardOverlay: document.getElementById('leaderboardOverlay'),
     leaderboardContent: document.getElementById('leaderboardContent'),
     closeLeaderboardBtn: document.getElementById('closeLeaderboardBtn'),
-    instructionsText: document.getElementById('instructionsText')
+    instructionsText: document.getElementById('instructionsText'),
+    mobileUp: null,
+    mobileDown: null,
+    mobileLeft: null,
+    mobileRight: null,
+    mobileFlagBtn: null,
+    mobileRevealBtn: null
   };
+
+  // Mobile controls will be set after DOM loads
+  function setupMobileControls() {
+    elements.mobileUp = document.querySelector('.d-up');
+    elements.mobileDown = document.querySelector('.d-down');
+    elements.mobileLeft = document.querySelector('.d-left');
+    elements.mobileRight = document.querySelector('.d-right');
+    elements.mobileFlagBtn = document.getElementById('mobileFlagBtn');
+    elements.mobileRevealBtn = document.getElementById('mobileRevealBtn');
+
+    if (elements.mobileUp) elements.mobileUp.addEventListener('click', () => moveFocus('up'));
+    if (elements.mobileDown) elements.mobileDown.addEventListener('click', () => moveFocus('down'));
+    if (elements.mobileLeft) elements.mobileLeft.addEventListener('click', () => moveFocus('left'));
+    if (elements.mobileRight) elements.mobileRight.addEventListener('click', () => moveFocus('right'));
+    if (elements.mobileFlagBtn) elements.mobileFlagBtn.addEventListener('click', () => mobileAction('flag'));
+    if (elements.mobileRevealBtn) elements.mobileRevealBtn.addEventListener('click', () => mobileAction('reveal'));
+  }
+
+  function moveFocus(direction) {
+    if (state.gameOver || state.gameWon) return;
+    if (state.focusedCell === null) {
+      state.focusedCell = state.grid[0][0];
+      state.focusedCell.element.focus();
+      return;
+    }
+    let nextRow = state.focusedCell.row;
+    let nextCol = state.focusedCell.col;
+    switch (direction) {
+      case 'up': nextRow = Math.max(0, nextRow - 1); break;
+      case 'down': nextRow = Math.min(state.rows - 1, nextRow + 1); break;
+      case 'left': nextCol = Math.max(0, nextCol - 1); break;
+      case 'right': nextCol = Math.min(state.cols - 1, nextCol + 1); break;
+    }
+    const nextCell = state.grid[nextRow][nextCol];
+    if (nextCell && nextCell.element) {
+      nextCell.element.focus();
+    }
+  }
+
+  function mobileAction(action) {
+    if (state.gameOver || state.gameWon) return;
+    if (state.focusedCell === null) {
+      state.focusedCell = state.grid[0][0];
+      state.focusedCell.element.focus();
+    }
+    const cell = state.focusedCell;
+    if (!cell) return;
+    if (action === 'flag') {
+      handleRightClick(cell, { preventDefault: () => {} });
+    } else if (action === 'reveal') {
+      handleClick(cell, { preventDefault: () => {} });
+    }
+  }
 
   // High Score Management
   const STORAGE_KEY = 'atlas_sweeper_scores';
@@ -122,13 +181,16 @@
     const headerHeight = 80;
     const hudHeight = 50;
     const footerHeight = 40;
+    // Measure mobile controls height if present
+    const mobileControlsEl = document.querySelector('.mobile-controls');
+    const mobileHeight = mobileControlsEl ? mobileControlsEl.offsetHeight : 0;
     // Read CSS variables for padding
     const computedStyle = getComputedStyle(document.documentElement);
     const hPadding = parseInt(computedStyle.getPropertyValue('--h-padding')) || 16;
     const vPadding = parseInt(computedStyle.getPropertyValue('--v-padding')) || 12;
     // Available space inside screen-container content area
     const availableWidth = window.innerWidth - 2 * hPadding - 2 * GRID_OUTER_MARGIN;
-    const availableHeight = window.innerHeight - headerHeight - hudHeight - footerHeight - 2 * vPadding - 2 * GRID_OUTER_MARGIN;
+    const availableHeight = window.innerHeight - headerHeight - hudHeight - footerHeight - 2 * vPadding - 2 * GRID_OUTER_MARGIN - mobileHeight;
     const totalGapWidth = (cfg.cols - 1) * GAP;
     const totalGapHeight = (cfg.rows - 1) * GAP;
     const extraWidth = 2 * CONTAINER_PADDING + 2 * CONTAINER_BORDER;
@@ -532,7 +594,7 @@
   // Update instructions based on device
   function updateInstructions() {
     if (state.isTouchDevice) {
-      elements.instructionsText.innerHTML = 'TAP: REVEAL &nbsp;|&nbsp; LONG PRESS: FLAG &nbsp;|&nbsp; R: RESTART';
+      elements.instructionsText.innerHTML = 'TAP/REVEAL BUTTON: REVEAL &nbsp;|&nbsp; LONG PRESS/FLAG BUTTON: FLAG &nbsp;|&nbsp; ARROWS/BUTTONS: MOVE &nbsp;|&nbsp; R: RESTART';
     } else {
       elements.instructionsText.innerHTML = 'L-CLICK/SPACE: REVEAL &nbsp;|&nbsp; R-CLICK/F: FLAG &nbsp;|&nbsp; ARROWS: MOVE &nbsp;|&nbsp; R: RESTART';
     }
@@ -570,4 +632,5 @@
   // Boot
   initGame();
   elements.grid.focus();
+  setupMobileControls();
 })();
