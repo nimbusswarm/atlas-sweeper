@@ -16,8 +16,9 @@
   --cell-revealed: #0a0a0a;
   --cell-border: #333;
   --grid-gap: 2px;
-  --h-padding: min(24px, 4vw);
-  --v-padding: min(12px, 2vh);
+  --h-padding: 16px; /* consistent outer padding */
+  --v-padding: 12px;
+  --grid-outer: 12px; /* padding around grid border */
 }
 
 * {
@@ -52,7 +53,7 @@ body {
   height: 100vh;
   pointer-events: none;
   z-index: 1000;
-  background: 
+  background:
     repeating-linear-gradient(
       0deg,
       rgba(0,0,0,0.15),
@@ -111,7 +112,7 @@ body {
   align-items: center;
   padding: 8px 0;
   border-bottom: 2px solid var(--fg-dim);
-  margin-bottom: 8px;
+  margin-bottom: var(--grid-outer); /* consistent spacing to HUD */
   flex-wrap: wrap;
   gap: 10px;
 }
@@ -205,9 +206,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  overflow: hidden; /* No scrollbars */
-  padding: 10px 0;
+  gap: 0; /* we use grid margin for spacing */
+  overflow: hidden;
+  padding: 0;
 }
 
 .hud {
@@ -215,6 +216,7 @@ body {
   gap: 40px;
   font-size: 1.5rem;
   flex-shrink: 0;
+  margin-bottom: 0; /* grid's top margin provides spacing */
 }
 
 .hud-item {
@@ -239,8 +241,8 @@ body {
   background: var(--cell-bg);
   border: 2px solid var(--fg-dim);
   box-shadow: var(--glow-strong);
-  padding: 4px;
-  margin: 10px 0;
+  padding: 4px; /* inner padding */
+  margin: var(--grid-outer); /* equal outer padding on all sides */
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
@@ -347,7 +349,7 @@ body {
 .footer {
   padding: 8px 0;
   border-top: 1px solid var(--fg-dim);
-  margin-top: 8px;
+  margin-top: 0; /* grid's bottom margin provides spacing */
   text-align: center;
   flex-shrink: 0;
 }
@@ -377,21 +379,18 @@ body {
   .message-box { padding: 20px 30px; }
   .message-box h2 { font-size: 1.8rem; }
   .message-box p { font-size: 1rem; }
-  --h-padding: min(16px, 3vw);
-  --v-padding: min(10px, 2vh);
 }
 
 @media (max-width: 480px) {
   .hud { font-size: 1rem; }
   .glow-text { font-size: 1.2rem; }
   .crt-btn { font-size: 1rem; padding: 4px 8px; }
-  .instructions { font-size: 0.8rem; }
-  --h-padding: min(12px, 4vw);
+  .header { padding: 8px 0; }
+  .game-area { padding: 0; }
 }
 
 /* Extra small devices */
 @media (max-width: 360px) {
   .hud { font-size: 0.9rem; }
   .instructions { font-size: 0.75rem; }
-  --h-padding: min(8px, 5vw);
 }

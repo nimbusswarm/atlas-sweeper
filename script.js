@@ -8,6 +8,12 @@
     expert: { cols: 30, rows: 16, mines: 99 }
   };
 
+  // Constants matching CSS
+  const GRID_OUTER_MARGIN = 12; // --grid-outer in px
+  const CONTAINER_PADDING = 4;  /* px */
+  const CONTAINER_BORDER = 2;   /* px */
+  const GAP = 2;               /* px */
+
   const state = {
     grid: [],
     cols: 0,
@@ -111,28 +117,35 @@
   // Calculate responsive cell size
   function calculateCellSize() {
     const cfg = CONFIG[state.difficulty];
-    const gap = 2;
-    // Compute available space: viewport minus header/hud/footer and horizontal padding
+    // Estimate space taken by other UI elements
     const headerHeight = 80;
     const hudHeight = 50;
     const footerHeight = 40;
-    const vpadding = window.innerWidth < 768 ? 20 : 48; // matches CSS var --v-padding roughly
-    const hpadding = window.innerWidth < 768 ? (window.innerWidth < 480 ? 12 : 16) : 24; // matches --h-padding
-    const availableWidth = window.innerWidth - 2 * hpadding;
-    const availableHeight = window.innerHeight - headerHeight - hudHeight - footerHeight - 2 * vpadding;
-    const totalGapWidth = (cfg.cols - 1) * gap;
-    const totalGapHeight = (cfg.rows - 1) * gap;
-    const maxCellWidth = Math.floor((availableWidth - totalGapWidth - 8) / cfg.cols);
-    const maxCellHeight = Math.floor((availableHeight - totalGapHeight - 8) / cfg.rows);
-    // Constrain to reasonable range
+    // Read CSS variables for padding
+    const computedStyle = getComputedStyle(document.documentElement);
+    const hPadding = parseInt(computedStyle.getPropertyValue('--h-padding')) || 16;
+    const vPadding = parseInt(computedStyle.getPropertyValue('--v-padding')) || 12;
+    // Available space inside screen-container content area
+    const availableWidth = window.innerWidth - 2 * hPadding - 2 * GRID_OUTER_MARGIN;
+    const availableHeight = window.innerHeight - headerHeight - hudHeight - footerHeight - 2 * vPadding - 2 * GRID_OUTER_MARGIN;
+    const totalGapWidth = (cfg.cols - 1) * GAP;
+    const totalGapHeight = (cfg.rows - 1) * GAP;
+    const extraWidth = 2 * CONTAINER_PADDING + 2 * CONTAINER_BORDER;
+    const extraHeight = 2 * CONTAINER_PADDING + 2 * CONTAINER_BORDER;
+    const maxCellWidth = Math.floor((availableWidth - totalGapWidth - extraWidth) / cfg.cols);
+    const maxCellHeight = Math.floor((availableHeight - totalGapHeight - extraHeight) / cfg.rows);
+    // Clamp to reasonable range
     return Math.max(12, Math.min(maxCellWidth, maxCellHeight, 40));
   }
 
   function setupGridLayout() {
     const cellSize = calculateCellSize();
-    const gap = 2;
-    const containerWidth = state.cols * cellSize + (state.cols - 1) * gap + 8;
-    const containerHeight = state.rows * cellSize + (state.rows - 1) * gap + 8;
+    const totalGapWidth = (state.cols - 1) * GAP;
+    const totalGapHeight = (state.rows - 1) * GAP;
+    const extraWidth = 2 * CONTAINER_PADDING + 2 * CONTAINER_BORDER;
+    const extraHeight = 2 * CONTAINER_PADDING + 2 * CONTAINER_BORDER;
+    const containerWidth = state.cols * cellSize + totalGapWidth + extraWidth;
+    const containerHeight = state.rows * cellSize + totalGapHeight + extraHeight;
     const gridEl = elements.grid;
     gridEl.style.gridTemplateColumns = `repeat(${state.cols}, ${cellSize}px)`;
     gridEl.style.gridTemplateRows = `repeat(${state.rows}, ${cellSize}px)`;
