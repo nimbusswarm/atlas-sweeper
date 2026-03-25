@@ -1,4 +1,4 @@
-// Atlas Sweeper - Game Logic
+// Atlas Sweeper - Game Logic with Mobile Support and High Scores
 // Fully self-contained, no external dependencies
 
 (() => {
@@ -21,7 +21,10 @@
     timer: 0,
     timerInterval: null,
     difficulty: 'intermediate',
-    focusedCell: null
+    focusedCell: null,
+    touchStartTime: 0,
+    touchTarget: null,
+    isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0
   };
 
   const elements = {
@@ -30,11 +33,107 @@
     timer: document.getElementById('timer'),
     difficulty: document.getElementById('difficulty'),
     restartBtn: document.getElementById('restartBtn'),
+    scoresBtn: document.getElementById('scoresBtn'),
     messageOverlay: document.getElementById('messageOverlay'),
     messageTitle: document.getElementById('messageTitle'),
     messageText: document.getElementById('messageText'),
-    overlayCloseBtn: document.getElementById('overlayCloseBtn')
+    overlayCloseBtn: document.getElementById('overlayCloseBtn'),
+    scoreEntryOverlay: document.getElementById('scoreEntryOverlay'),
+    playerName: document.getElementById('playerName'),
+    saveScoreBtn: document.getElementById('saveScoreBtn'),
+    cancelScoreBtn: document.getElementById('cancelScoreBtn'),
+    leaderboardOverlay: document.getElementById('leaderboardOverlay'),
+    leaderboardContent: document.getElementById('leaderboardContent'),
+    closeLeaderboardBtn: document.getElementById('closeLeaderboardBtn'),
+    instructionsText: document.getElementById('instructionsText')
   };
+
+  // High Score Management
+  const STORAGE_KEY = 'atlas_sweeper_scores';
+
+  function getScores() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : { beginner: [], intermediate: [], expert: [] };
+    } catch (e) {
+      return { beginner: [], intermediate: [], expert: [] };
+    }
+  }
+
+  function saveScore(difficulty, time, name) {
+    const scores = getScores();
+    scores[difficulty].push({ time, name, date: new Date().toISOString() });
+    scores[difficulty].sort((a, b) => a.time - b.time);
+    scores[difficulty] = scores[difficulty].slice(0, 10); // Keep top 10
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+  }
+
+  function renderLeaderboard(difficulty) {
+    const scores = getScores();
+    const list = scores[difficulty] || [];
+    if (list.length === 0) {
+      elements.leaderboardContent.innerHTML = '<p class="text-dim">No scores yet.</p>';
+      return;
+    }
+    const html = `
+      <table style="width:100%; border-collapse: collapse; font-size: 1.1rem;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--fg-dim);">
+            <th style="padding: 5px; text-align: left;">RANK</th>
+            <th style="padding: 5px; text-align: left;">TIME</th>
+            <th style="padding: 5px; text-align: left;">NAME</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map((entry, idx) => `
+            <tr style="border-bottom: 1px dotted #004400;">
+              <td style="padding: 5px;">${idx + 1}</td>
+              <td style="padding: 5px;" class="glow-text">${entry.time}s</td>
+              <td style="padding: 5px;">${entry.name}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    elements.leaderboardContent.innerHTML = html;
+  }
+
+  function showLeaderboard() {
+    renderLeaderboard(state.difficulty);
+    elements.leaderboardOverlay.classList.remove('hidden');
+  }
+
+  function hideLeaderboard() {
+    elements.leaderboardOverlay.classList.add('hidden');
+    elements.grid.focus();
+  }
+
+  // Calculate responsive cell size
+  function calculateCellSize() {
+    const maxGridWidth = Math.min(window.innerWidth - 40, 1200);
+    const maxGridHeight = Math.min(window.innerHeight - 200, 600);
+    const cfg = CONFIG[state.difficulty];
+    const gap = 2;
+    const totalGapWidth = (cfg.cols - 1) * gap;
+    const totalGapHeight = (cfg.rows - 1) * gap;
+    const padding = 8;
+    const maxCellWidth = Math.max(18, Math.floor((maxGridWidth - totalGapWidth - padding) / cfg.cols));
+    const maxCellHeight = Math.max(18, Math.floor((maxGridHeight - totalGapHeight - padding) / cfg.rows));
+    return Math.min(maxCellWidth, maxCellHeight, 40);
+  }
+
+  function setupGridLayout() {
+    const cellSize = calculateCellSize();
+    const gap = getComputedStyle(document.documentElement).getPropertyValue('--grid-gap').trim() || '2px';
+    const gapPx = parseInt(gap, 10) || 2;
+    const containerWidth = state.cols * cellSize + (state.cols - 1) * gapPx + 8;
+    const containerHeight = state.rows * cellSize + (state.rows - 1) * gapPx + 8;
+    const gridEl = elements.grid;
+    gridEl.style.gridTemplateColumns = `repeat(${state.cols}, ${cellSize}px)`;
+    gridEl.style.gridTemplateRows = `repeat(${state.rows}, ${cellSize}px)`;
+    gridEl.style.width = `${containerWidth}px`;
+    gridEl.style.height = `${containerHeight}px`;
+  }
 
   // Initialize game
   function initGame() {
@@ -54,10 +153,13 @@
     updateTimerDisplay();
     updateMineCounter();
     hideOverlay();
+    hideScoreEntry();
+    hideLeaderboard();
 
     createGrid();
     setupGridLayout();
     renderGrid();
+    updateInstructions();
   }
 
   function createGrid() {
@@ -79,18 +181,6 @@
     }
   }
 
-  function setupGridLayout() {
-    const gap = getComputedStyle(document.documentElement).getPropertyValue('--grid-gap').trim() || '2px';
-    const gapPx = parseInt(gap, 10) || 2;
-    const cellSize = window.innerWidth < 480 ? 20 : window.innerWidth < 768 ? 24 : 30;
-    const containerWidth = state.cols * cellSize + (state.cols - 1) * gapPx + 8;
-    const containerHeight = state.rows * cellSize + (state.rows - 1) * gapPx + 8;
-    elements.grid.style.gridTemplateColumns = `repeat(${state.cols}, ${cellSize}px)`;
-    elements.grid.style.gridTemplateRows = `repeat(${state.rows}, ${cellSize}px)`;
-    elements.grid.style.width = `${containerWidth}px`;
-    elements.grid.style.height = `${containerHeight}px`;
-  }
-
   function renderGrid() {
     elements.grid.innerHTML = '';
     for (let r = 0; r < state.rows; r++) {
@@ -100,14 +190,48 @@
         cellEl.className = 'cell';
         cellEl.dataset.row = r;
         cellEl.dataset.col = c;
-        cellEl.tabIndex = -1; // we'll manage focus manually
+        cellEl.tabIndex = -1;
+        // Mouse events
         cellEl.addEventListener('click', handleClick.bind(null, cellData));
         cellEl.addEventListener('contextmenu', handleRightClick.bind(null, cellData));
         cellEl.addEventListener('focus', () => { state.focusedCell = cellData; });
+        // Touch events for mobile
+        cellEl.addEventListener('touchstart', handleTouchStart.bind(null, cellData), { passive: false });
+        cellEl.addEventListener('touchend', handleTouchEnd.bind(null, cellData), { passive: false });
+        cellEl.addEventListener('touchmove', handleTouchMove, { passive: false });
         cellData.element = cellEl;
         elements.grid.appendChild(cellEl);
       }
     }
+  }
+
+  let touchMoved = false;
+
+  function handleTouchStart(cellData, event) {
+    if (state.gameOver || state.gameWon) return;
+    event.preventDefault();
+    touchMoved = false;
+    state.touchStartTime = Date.now();
+    state.touchTarget = cellData;
+  }
+
+  function handleTouchMove(event) {
+    touchMoved = true;
+  }
+
+  function handleTouchEnd(cellData, event) {
+    if (state.gameOver || state.gameWon) return;
+    event.preventDefault();
+    const duration = Date.now() - state.touchStartTime;
+    // Long press: > 500ms
+    if (duration > 500 && state.touchTarget === cellData && !touchMoved) {
+      // Flag action
+      handleRightClick(cellData, { preventDefault: () => {} });
+    } else if (!touchMoved) {
+      // Tap: reveal
+      handleClick(cellData, { preventDefault: () => {} });
+    }
+    state.touchTarget = null;
   }
 
   function placeMines(excludeRow, excludeCol) {
@@ -115,7 +239,6 @@
     while (minesPlaced < state.totalMines) {
       const r = Math.floor(Math.random() * state.rows);
       const c = Math.floor(Math.random() * state.cols);
-      // Exclude the first clicked cell and its immediate neighbors to ensure safe start
       if (Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1) continue;
       if (state.grid[r][c].isMine) continue;
       state.grid[r][c].isMine = true;
@@ -249,6 +372,22 @@
       }
       state.flaggedCount = state.totalMines;
       updateMineCounter();
+
+      // Check for high score
+      const scores = getScores();
+      const currentBest = scores[state.difficulty][0]?.time || Infinity;
+      if (state.timer < currentBest || scores[state.difficulty].length < 10) {
+        // Show high score entry after brief delay
+        setTimeout(() => {
+          showOverlay('MISSION COMPLETE', `You cleared the field in ${state.timer} seconds!`, false);
+          setTimeout(() => {
+            hideOverlay();
+            showScoreEntry();
+          }, 1500);
+        }, 500);
+        return;
+      }
+
       showOverlay('MISSION COMPLETE', `You cleared the field in ${state.timer} seconds.`, true);
     } else {
       // Reveal all mines
@@ -266,11 +405,10 @@
 
   function restartGame() {
     initGame();
-    // Set focus to grid for keyboard navigation
     elements.grid.focus();
   }
 
-  // Keyboard navigation
+  // Keyboard navigation (desktop)
   function handleKeyDown(event) {
     if (state.gameOver && event.key !== 'r' && event.key !== 'R') return;
 
@@ -280,8 +418,18 @@
       return;
     }
 
+    // Close overlays with Escape
+    if (key === 'escape') {
+      hideOverlay();
+      hideScoreEntry();
+      hideLeaderboard();
+      return;
+    }
+
+    // Disable arrow navigation on mobile to avoid scroll conflicts
+    if (state.isTouchDevice) return;
+
     if (state.focusedCell === null) {
-      // Focus on first cell
       state.focusedCell = state.grid[0][0];
       state.focusedCell.element.focus();
       return;
@@ -297,16 +445,16 @@
       case 'arrowright': nextCol = Math.min(state.cols - 1, nextCol + 1); break;
       case ' ': case 'enter': event.preventDefault(); handleClick(state.focusedCell); return;
       case 'f': event.preventDefault(); handleRightClick(state.focusedCell, { preventDefault: () => {} }); return;
-      case 'escape': hideOverlay(); return;
       default: return;
     }
 
-    const nextCell = state.grid[nextRow][nextCol];
+    const nextCell = state.grid[nextRow]?.[nextCol];
     if (nextCell && nextCell.element) {
       nextCell.element.focus();
     }
   }
 
+  // Overlay management
   function showOverlay(title, text, showButton = false) {
     elements.messageTitle.textContent = title;
     elements.messageText.textContent = text;
@@ -319,11 +467,44 @@
 
   function hideOverlay() {
     elements.messageOverlay.classList.add('hidden');
-    elements.grid.focus();
+    if (!state.gameOver) elements.grid.focus();
+  }
+
+  // High Score Entry
+  function showScoreEntry() {
+    elements.playerName.value = '';
+    elements.scoreEntryOverlay.classList.remove('hidden');
+    elements.playerName.focus();
+  }
+
+  function hideScoreEntry() {
+    elements.scoreEntryOverlay.classList.add('hidden');
+  }
+
+  function saveHighScore() {
+    const name = elements.playerName.value.trim() || 'PLAYER';
+    saveScore(state.difficulty, state.timer, name);
+    hideScoreEntry();
+    showLeaderboard();
+  }
+
+  function cancelHighScore() {
+    hideScoreEntry();
+    restartGame();
+  }
+
+  // Update instructions based on device
+  function updateInstructions() {
+    if (state.isTouchDevice) {
+      elements.instructionsText.innerHTML = 'TAP: REVEAL &nbsp;|&nbsp; LONG PRESS: FLAG &nbsp;|&nbsp; R: RESTART';
+    } else {
+      elements.instructionsText.innerHTML = 'L-CLICK/SPACE: REVEAL &nbsp;|&nbsp; R-CLICK/F: FLAG &nbsp;|&nbsp; ARROWS: MOVE &nbsp;|&nbsp; R: RESTART';
+    }
   }
 
   // Event listeners
   elements.restartBtn.addEventListener('click', restartGame);
+  elements.scoresBtn.addEventListener('click', showLeaderboard);
   elements.overlayCloseBtn.addEventListener('click', () => {
     if (state.gameOver || state.gameWon) {
       restartGame();
@@ -335,6 +516,14 @@
   elements.difficulty.addEventListener('change', (e) => {
     state.difficulty = e.target.value;
     restartGame();
+  });
+
+  elements.saveScoreBtn.addEventListener('click', saveHighScore);
+  elements.cancelScoreBtn.addEventListener('click', cancelHighScore);
+  elements.closeLeaderboardBtn.addEventListener('click', hideLeaderboard);
+  elements.playerName.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveHighScore();
+    if (e.key === 'Escape') cancelHighScore();
   });
 
   document.addEventListener('keydown', handleKeyDown);

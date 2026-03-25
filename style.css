@@ -27,6 +27,8 @@
 html, body {
   height: 100%;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body {
@@ -108,6 +110,8 @@ body {
   padding: 10px 20px;
   border-bottom: 2px solid var(--fg-dim);
   margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .glow-text {
@@ -121,6 +125,7 @@ body {
   display: flex;
   gap: 15px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .crt-btn {
@@ -171,6 +176,24 @@ body {
   box-shadow: var(--glow);
 }
 
+.crt-input {
+  background: var(--bg-color);
+  color: var(--fg-bright);
+  border: 2px solid var(--fg-dim);
+  font-family: 'VT323', monospace;
+  font-size: 1.3rem;
+  padding: 8px 12px;
+  width: 100%;
+  text-align: center;
+  text-shadow: var(--glow);
+}
+
+.crt-input:focus {
+  border-color: var(--fg-bright);
+  outline: none;
+  box-shadow: var(--glow);
+}
+
 /* Game Area */
 .game-area {
   flex: 1;
@@ -180,6 +203,7 @@ body {
   justify-content: flex-start;
   gap: 10px;
   overflow: auto;
+  padding: 10px 0;
 }
 
 .hud {
@@ -212,12 +236,13 @@ body {
   box-shadow: var(--glow-strong);
   padding: 4px;
   margin: 10px 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* Individual cell */
 .cell {
-  width: 30px;
-  height: 30px;
   background: var(--cell-bg);
   border: 1px solid var(--fg-dim);
   display: flex;
@@ -227,6 +252,7 @@ body {
   font-weight: bold;
   cursor: pointer;
   user-select: none;
+  -webkit-user-select: none;
   transition: background-color 0.15s, transform 0.1s;
   text-shadow: var(--glow);
 }
@@ -342,10 +368,23 @@ body {
   .hud { font-size: 1.2rem; }
   .glow-text { font-size: 1.5rem; }
   .instructions { font-size: 0.85rem; }
+  .message-box { padding: 20px 30px; }
+  .message-box h2 { font-size: 1.8rem; }
+  .message-box p { font-size: 1rem; }
 }
 
 @media (max-width: 480px) {
   .cell { width: 20px; height: 20px; font-size: 0.8rem; }
   .hud { gap: 20px; }
   .glow-text { font-size: 1.2rem; }
+  .crt-btn { font-size: 1rem; padding: 4px 8px; }
+  .header { padding: 8px 10px; }
+  .game-area { padding: 5px 0; gap: 5px; }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .cell { width: 18px; height: 18px; font-size: 0.7rem; }
+  .hud { font-size: 1rem; }
+  .instructions { font-size: 0.75rem; }
 }

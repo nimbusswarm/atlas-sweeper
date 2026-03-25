@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="Retro CRT terminal Minesweeper clone">
   <title>Atlas Sweeper</title>
   <link rel="stylesheet" href="style.css">
@@ -16,6 +16,7 @@
       <h1 class="glow-text">ATLAS SWEEPER</h1>
       <div class="controls-top">
         <button id="restartBtn" class="crt-btn" title="Restart (R)">RESET</button>
+        <button id="scoresBtn" class="crt-btn" title="High Scores">SCORES</button>
         <div class="difficulty-selector">
           <label for="difficulty">LEVEL:</label>
           <select id="difficulty" class="crt-select">
@@ -48,10 +49,34 @@
           <button id="overlayCloseBtn" class="crt-btn">CONTINUE</button>
         </div>
       </div>
+
+      <!-- High Score Entry Modal -->
+      <div id="scoreEntryOverlay" class="message-overlay hidden" role="dialog" aria-modal="true">
+        <div class="message-box">
+          <h2 class="glow-text">NEW HIGH SCORE!</h2>
+          <p>Enter your name:</p>
+          <input type="text" id="playerName" class="crt-input" maxlength="20" placeholder="PLAYER" autocomplete="off" />
+          <div style="margin-top: 15px;">
+            <button id="saveScoreBtn" class="crt-btn">SAVE</button>
+            <button id="cancelScoreBtn" class="crt-btn" style="margin-left: 10px;">CANCEL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Modal -->
+      <div id="leaderboardOverlay" class="message-overlay hidden" role="dialog" aria-modal="true">
+        <div class="message-box" style="max-width: 90%;">
+          <h2 class="glow-text">HIGH SCORES</h2>
+          <div id="leaderboardContent" style="max-height: 60vh; overflow-y: auto; margin: 15px 0;">
+            <!-- Populated by JS -->
+          </div>
+          <button id="closeLeaderboardBtn" class="crt-btn">CLOSE</button>
+        </div>
+      </div>
     </main>
 
     <footer class="footer">
-      <p class="instructions">
+      <p class="instructions" id="instructionsText">
         L-CLICK/SPACE: REVEAL &nbsp;|&nbsp; R-CLICK/F: FLAG &nbsp;|&nbsp; ARROWS: MOVE &nbsp;|&nbsp; R: RESTART
       </p>
     </footer>
