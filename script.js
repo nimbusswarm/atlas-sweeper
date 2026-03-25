@@ -181,9 +181,9 @@
     const headerHeight = 80;
     const hudHeight = 50;
     const footerHeight = 40;
-    // Measure mobile controls height if present
+    // Measure mobile controls height if present (include margin)
     const mobileControlsEl = document.querySelector('.mobile-controls');
-    const mobileHeight = mobileControlsEl ? mobileControlsEl.offsetHeight : 0;
+    const mobileHeight = mobileControlsEl ? (mobileControlsEl.offsetHeight + parseFloat(getComputedStyle(mobileControlsEl).marginTop) + parseFloat(getComputedStyle(mobileControlsEl).marginBottom)) : 0;
     // Read CSS variables for padding
     const computedStyle = getComputedStyle(document.documentElement);
     const hPadding = parseInt(computedStyle.getPropertyValue('--h-padding')) || 16;
