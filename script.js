@@ -339,8 +339,8 @@
       handleClick(cellData, { preventDefault: () => {} });
     }
     state.touchTarget = null;
-    // Reset touchHandled after a short delay to allow suppression of synthetic mouse events
-    setTimeout(() => { state.touchHandled = false; }, 100);
+    // Reset touchHandled after a longer delay to suppress delayed contextmenu
+    setTimeout(() => { state.touchHandled = false; }, 1000);
   }
 
   function placeMines(excludeRow, excludeCol) {
