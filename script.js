@@ -281,6 +281,12 @@
           handleClick(cellData, e);
         });
         cellEl.addEventListener('contextmenu', (e) => {
+          // On touch devices, suppress contextmenu entirely; we handle flag via long-press
+          if (state.isTouchDevice) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
           if (state.touchHandled) {
             e.preventDefault();
             e.stopPropagation();
