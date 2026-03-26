@@ -25,7 +25,7 @@
     touchStartTime: 0,
     touchTarget: null,
     isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-    touchHandled: false // flag to ignore synthetic click after touch
+    touchHandled: false // flag to suppress subsequent mouse events after touch
   };
 
   const elements = {
@@ -276,12 +276,18 @@
         cellEl.addEventListener('click', (e) => {
           if (state.touchHandled) {
             e.preventDefault();
-            state.touchHandled = false;
             return;
           }
           handleClick(cellData, e);
         });
-        cellEl.addEventListener('contextmenu', handleRightClick.bind(null, cellData));
+        cellEl.addEventListener('contextmenu', (e) => {
+          if (state.touchHandled) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          handleRightClick(cellData, e);
+        });
         cellEl.addEventListener('focus', () => { state.focusedCell = cellData; });
         // Touch events for mobile
         cellEl.addEventListener('touchstart', handleTouchStart.bind(null, cellData), { passive: false });
@@ -291,7 +297,6 @@
         cellEl.addEventListener('mouseup', (e) => {
           if (state.touchHandled) {
             e.preventDefault();
-            state.touchHandled = false;
           }
         });
         cellData.element = cellEl;
@@ -321,15 +326,15 @@
     const duration = Date.now() - state.touchStartTime;
     // Long press: > 500ms
     if (duration > 500 && state.touchTarget === cellData && !touchMoved) {
-      // Flag action - mark as handled to prevent synthetic click
       state.touchHandled = true;
       handleRightClick(cellData, { preventDefault: () => {} });
     } else if (!touchMoved) {
-      // Tap: reveal - mark as handled
       state.touchHandled = true;
       handleClick(cellData, { preventDefault: () => {} });
     }
     state.touchTarget = null;
+    // Reset touchHandled after a short delay to allow suppression of synthetic mouse events
+    setTimeout(() => { state.touchHandled = false; }, 100);
   }
 
   function placeMines(excludeRow, excludeCol) {
