@@ -95,6 +95,7 @@
 
   function mobileAction(action) {
     if (state.gameOver || state.gameWon) return;
+    // Move focus to grid before action; buttons should not retain focus
     if (state.focusedCell === null) {
       state.focusedCell = state.grid[0][0];
       state.focusedCell.element.focus();
@@ -106,6 +107,10 @@
     } else if (action === 'reveal') {
       handleClick(cell, { preventDefault: () => {} });
     }
+    // Return focus to grid to avoid button staying in focus style
+    setTimeout(() => {
+      cell.element.focus();
+    }, 0);
   }
 
   // High Score Management
@@ -605,7 +610,7 @@
   // Update instructions based on device
   function updateInstructions() {
     if (state.isTouchDevice) {
-      elements.instructionsText.innerHTML = 'TAP/REVEAL BUTTON: REVEAL &nbsp;|&nbsp; LONG PRESS/FLAG BUTTON: FLAG &nbsp;|&nbsp; ARROWS/BUTTONS: MOVE &nbsp;|&nbsp; R: RESTART';
+      elements.instructionsText.innerHTML = 'TAP/REVEAL: REVEAL &nbsp;|&nbsp; LONG PRESS/FLAG: FLAG &nbsp;|&nbsp; ARROWS: MOVE &nbsp;|&nbsp; R: RESTART';
     } else {
       elements.instructionsText.innerHTML = 'L-CLICK/SPACE: REVEAL &nbsp;|&nbsp; R-CLICK/F: FLAG &nbsp;|&nbsp; ARROWS: MOVE &nbsp;|&nbsp; R: RESTART';
     }
